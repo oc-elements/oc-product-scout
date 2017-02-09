@@ -1,0 +1,17 @@
+{
+  "name": "oc-product-scout",
+  "description": "Scouts available products of a specified category across connected organisations",
+  "main": "oc-product-scout.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.4.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "oc-product-api": "git://github.com/oc-elements/oc-product-api#1.x",
+    "oc-product-tag-api": "git://github.com/oc-elements/oc-product-tag-api#1.x",
+    "oc-connection-api": "git://github.com/oc-elements/oc-connection-api#1.x"
+  }
+}

@@ -1,0 +1,34 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`oc-product-scout`
+Scouts available products of a specified category across connected organisations
+
+@demo demo/index.html 
+-->
+
+<dom-module id="oc-product-scout">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]</h2>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'oc-product-scout',
+
+      properties: {
+        prop1: {
+          type: String,
+          value: 'oc-product-scout',
+        },
+      },
+
+    });
+  </script>
+</dom-module>
