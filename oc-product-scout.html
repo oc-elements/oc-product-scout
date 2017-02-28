@@ -1,34 +1,186 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../oc-core-utils/oc-api-consumer-behaviour.html">
+
+<link rel="import" href="../iron-data-table/iron-data-table.html">
+<link rel="import" href="../oc-grid-controls/oc-grid-controls.html">
+<link rel="import" href="../oc-iron-data-table-styles/oc-iron-data-table-styles.html">
+<link rel="import" href="../oc-paginator/mercury-paginator.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+
+<link rel="import" href="../oc-product-tag-api/oc-product-tag-api.html">
+<link rel="import" href="../oc-product-api/oc-product-api.html">
+<link rel="import" href="../oc-connection-api/oc-connection-api.html">
+<link rel="import" href="../oc-organisation-api/oc-organisation-api.html">
+
+<link rel="import" href="../oc-paper-menu-button-in-iron-list/oc-paper-menu-button-in-iron-list.html">
 
 <!--
 `oc-product-scout`
 Scouts available products of a specified category across connected organisations
 
-@demo demo/index.html 
+@demo demo/index.html
 -->
 
 <dom-module id="oc-product-scout">
   <template>
+    <oc-product-tag-api id="prodTagApi"></oc-product-tag-api>
+    <oc-product-api id="prodApi"></oc-product-api>
+    <oc-connection-api id="connectionApi"></oc-connection-api>
     <style>
       :host {
         display: block;
       }
     </style>
-    <h2>Hello [[prop1]]</h2>
+    <paper-dropdown-menu
+        id="dropdown"
+        no-label-float
+        vertical-align="top"
+        horizontal-align="right"
+        disabled$="[[ !_productTags ]]"
+        invalid$="[[ errorMessage ]]"
+        error-message="[[ errorMessage ]]">
+      <paper-listbox id="list" class="dropdown-content" on-iron-select="_setSelectedProductTags">
+        <template is="dom-repeat" items="[[ _productTags ]]" as="producttag">
+          <paper-icon-item producttag="[[ producttag ]]">
+            <paper-item>
+              [[ producttag.name ]]
+            </paper-item>
+          </paper-icon-item>
+        </template>
+      </iron-selector>
+      </paper-listbox>
+    </paper-dropdown-menu>
+    <paper-dropdown-menu
+        id="dropdown"
+        no-label-float
+        vertical-align="top"
+        horizontal-align="right"
+        invalid$="[[ errorMessage ]]"
+        error-message="[[ errorMessage ]]">
+      <paper-listbox id="list" class="dropdown-content"  on-iron-select="_setSelectedOrganisation">
+        <template is="dom-repeat" items="[[ _myConnectedOrganisations ]]" as="organisation">
+          <paper-icon-item organisation="[[ organisation ]]">
+            <paper-item>
+              [[ organisation.toOrganisation.name  ]]
+            </paper-item>
+          </paper-icon-item>
+        </template>
+      </iron-selector>
+      </paper-listbox>
+    </paper-dropdown-menu>
+
+    <paper-material>
+      <p>Show products here</p>
+      <template is="dom-repeat" items="[[ _products ]]" as="product">
+          <div>[[ product.name  ]]</div>
+      </template>
+    </paper-material>
   </template>
-
   <script>
-    Polymer({
+  Polymer({
+   is: 'oc-product-scout',
+   properties: {
+     organisationId : Number,
+     loading: {
+       type: Boolean,
+       notify: true
+     }
+   },
 
-      is: 'oc-product-scout',
+   observers: [
+     'refresh(organisationId)'
+   ],
+   ready: function () {
+    this.refresh();
+   },
+   refresh: function() {
+     if (this.organisationId) {
+       this.loading = true;
+       this._getProductTags(1, 10);
+       this._getMyConnectedOrganisations(1, 10);
+     }
+   },
+   _getProductTags: function() {
+     this.$.prodTagApi.getAvailableTags()
+             .then(function(request) {
+               this._productTags = request.response.results;
+             }.bind(this))
+             .catch(this.fire.bind(this, 'extra-set-error', 'Failed to load products'))
+             .finally(this.set.bind(this, 'loading', false));
+   },
+  _getMyConnectedOrganisations: function() {
+      this.$.connectionApi.getConnectionsByType('M')
+             .then(function(request) {
+               this._myConnectedOrganisations = request.response.results;
+             }
+             .bind(this))
+             .catch(this.fire.bind(this, 'extra-set-error', 'Failed to load organisations'))
+             .finally(this.set.bind(this, 'loading', false));
+  },
 
-      properties: {
-        prop1: {
-          type: String,
-          value: 'oc-product-scout',
+   _getProducts: function() {
+     this._criteria = {
+        "tags": [{
+        "id": this._selectedTag.id,
+        "name": this._selectedTag.name,
+        "description": this._selectedTag.description,
+        "tagType": {
+          "id": this._selectedTag.tagType.id,
+          "description": this._selectedTag.tagType.description,
+          "name": this._selectedTag.tagType.name,
+            },
+        }],
+        "minPrice": null,
+        "maxPrice": null,
+        "available": true,
+        "order": [null],
+        "organisations": [this._selecedOrganisation.id],
+        "startDate": null,
+        "endDate": null,
+        "productIds": [
+          null
+        ],
+        "name": null
+}
+
+     this.$.prodApi.getProductByCriteria(this._criteria)
+        .then(function(request) {
+          this._products = request.response.results;
+        }
+        .bind(this))
+        .catch(this.fire.bind(this, 'extra-set-error', 'Failed to load organisations'))
+        .finally(this.set.bind(this, 'loading', false));
         },
-      },
 
-    });
+    _setSelectedProductTags: function(event, detail) {
+     this._selectedTag = detail.item.producttag;
+     if(this._selecedOrganisation){
+      this._getProducts();
+      }
+    },
+
+
+    _setSelectedOrganisation: function(event, detail) {
+      this._selecedOrganisation = detail.item.organisation;
+    if(this._selectedTag) {
+      (this._getProducts());
+      }
+    },
+
+   _getConnections: function(organisationId) {
+        this.$.getConnections.url = this._url('connections/organisation/' + organisationId + '/status');
+        this.$.getConnections.params = {
+          pagesize: -1,
+          connectionStatus: 'CONNECTED'
+        };
+        return this._generateRequest(this.$.getConnections);
+      }
+ });
   </script>
 </dom-module>
