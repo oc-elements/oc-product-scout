@@ -114,6 +114,7 @@ Scouts available products of a specified category across connected organisations
              .catch(this.fire.bind(this, 'extra-set-error', 'Failed to load products'))
              .finally(this.set.bind(this, 'loading', false));
    },
+
   _getMyConnectedOrganisations: function() {
       this.$.connectionApi.getConnectionsByType('M')
              .then(function(request) {
@@ -127,39 +128,32 @@ Scouts available products of a specified category across connected organisations
    _getProducts: function() {
      this._criteria = {
         "tags": [{
-        "id": this._selectedTag.id,
-        "name": this._selectedTag.name,
-        "description": this._selectedTag.description,
-        "tagType": {
-          "id": this._selectedTag.tagType.id,
-          "description": this._selectedTag.tagType.description,
-          "name": this._selectedTag.tagType.name,
-            },
+        "name": this._selectedTag.name
         }],
         "minPrice": null,
         "maxPrice": null,
         "available": true,
-        "order": [null],
+        "order": [],
         "organisations": [this._selecedOrganisation.id],
         "startDate": null,
         "endDate": null,
-        "productIds": [
-          null
-        ],
+        "productIds": [],
         "name": null
 }
 
      this.$.prodApi.getProductByCriteria(this._criteria)
         .then(function(request) {
-          this._products = request.response.results;
+         this._products = request.response.results;
+        console.log(request.response)
         }
         .bind(this))
         .catch(this.fire.bind(this, 'extra-set-error', 'Failed to load organisations'))
         .finally(this.set.bind(this, 'loading', false));
         },
 
+
     _setSelectedProductTags: function(event, detail) {
-     this._selectedTag = detail.item.producttag;
+     this._selectedTag = event.detail.item.producttag;
      if(this._selecedOrganisation){
       this._getProducts();
       }
@@ -167,7 +161,7 @@ Scouts available products of a specified category across connected organisations
 
 
     _setSelectedOrganisation: function(event, detail) {
-      this._selecedOrganisation = detail.item.organisation;
+      this._selecedOrganisation = event.detail.item.organisation.toOrganisation;
     if(this._selectedTag) {
       (this._getProducts());
       }
