@@ -11,8 +11,7 @@
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-
+<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../oc-product-tag-api/oc-product-tag-api.html">
 <link rel="import" href="../oc-product-api/oc-product-api.html">
 <link rel="import" href="../oc-connection-api/oc-connection-api.html">
@@ -35,7 +34,14 @@ Scouts available products of a specified category across connected organisations
     <style>
       :host {
         display: block;
+        --paper-item-min-height: 30px;
+        --paper-item-selected: { background: #0000FF; color: blue};
+        --paper-item-focused:	{color:blue};
       }
+      .product-list {
+        border:1px solid #ccc;
+      }
+
     </style>
     <paper-dropdown-menu
         id="dropdown"
@@ -67,7 +73,7 @@ Scouts available products of a specified category across connected organisations
         <template is="dom-repeat" items="[[ _myConnectedOrganisations ]]" as="organisation">
           <paper-icon-item organisation="[[ organisation ]]">
             <paper-item>
-              [[ organisation.toOrganisation.name  ]]
+              [[ organisation.toOrganisation.name ]]
             </paper-item>
           </paper-icon-item>
         </template>
@@ -75,10 +81,16 @@ Scouts available products of a specified category across connected organisations
       </paper-listbox>
     </paper-dropdown-menu>
 
-    <paper-material>
-      <p>Show products here</p>
+    <paper-material class="product-list">
+      <p>Available Products</p>
       <template is="dom-repeat" items="[[ _products ]]" as="product">
-          <div>[[ product.name  ]]</div>
+        <div role="listbox">
+          <paper-item>
+            <paper-item-body two-line>
+              <div>[[ product.name ]]</div>
+            </paper-item-body>
+          </paper-item>
+        </div>
       </template>
     </paper-material>
   </template>
@@ -158,7 +170,6 @@ Scouts available products of a specified category across connected organisations
       this._getProducts();
       }
     },
-
 
     _setSelectedOrganisation: function(event, detail) {
       this._selecedOrganisation = event.detail.item.organisation.toOrganisation;
